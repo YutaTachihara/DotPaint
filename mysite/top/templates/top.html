@@ -1,0 +1,46 @@
+{# --templates-- #}
+
+{% extends "base.html" %}
+{% load static %}
+
+{# --templates-- #}
+
+{% block title %}ページタイトル{% endblock title %}
+
+{% block content %}
+
+<div class="container">
+    <canvas id="canvas" style="
+        border : 1px solid black;
+        margin-left : auto ;
+        margin-right : auto
+    ">
+    </canvas>
+</div>
+
+<button type="button" class="btn btn-info" id="clear">クリア</button>
+
+<input type="color" name="head"value="#e66465" id="color">
+
+<input type="range" value="1" min="0" max="1" step="0.1" id="opa"
+  oninput="document.getElementById('opaVal').value=this.value">
+
+<output id="opaVal">1</output>
+
+<input type="range" value="10" min="10" max="100" step="5" id="x"
+  oninput="document.getElementById('xVal').value=this.value">
+
+<output id="xVal">1</output>
+
+<input type="range" value="10" min="10" max="100" step="5" id="y"
+  oninput="document.getElementById('yVal').value=this.value">
+
+<output id="yVal">1</output>
+
+<a id="download" href="#" download="canvas.png">ダウンロード</a>
+
+{% endblock content %}
+
+{% block script %}
+<script type="text/javascript" src="{% static 'top/js/top.js' %}"></script>
+{% endblock script %}
