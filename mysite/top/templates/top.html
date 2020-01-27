@@ -27,17 +27,21 @@
 
 <output id="opaVal">1</output>
 
-<input type="range" value="10" min="10" max="100" step="5" id="x"
+<input type="range" value="3" min="3" max="100" step="3" id="x"
   oninput="document.getElementById('xVal').value=this.value">
 
 <output id="xVal">1</output>
 
-<input type="range" value="10" min="10" max="100" step="5" id="y"
+<input type="range" value="3" min="3" max="100" step="3" id="y"
   oninput="document.getElementById('yVal').value=this.value">
 
 <output id="yVal">1</output>
 
 <a id="download" href="#" download="canvas.png">ダウンロード</a>
+
+<p>
+  <button type="button" id="uploader">入力値と固定値を送信する</button>
+</p>
 
 {% endblock content %}
 

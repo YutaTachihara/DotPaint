@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'top.apps.TopConfig',
+    'dot_pict.apps.DotPictConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

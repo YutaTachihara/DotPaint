@@ -1,21 +1,8 @@
 
-class Grid {
-
-    constructor(height, width, rowCount, column) {
-        this.height = Number(height);
-        this.width = Number(width);
-        this.rowCount = Number(rowCount);
-        this.rowCount = Number(columnCount)
-    }
-
-    gridAlpha () {
-        return 0.1;
-    }
-}
-
 var canvas = null
 var context = null
 var clicked = null
+const gridAlpha = 0.1;
 var x = 20;
 var y = 20;
 
@@ -30,11 +17,14 @@ window.addEventListener('load', function() {
     drawGrid();
 
     canvas.addEventListener('mousemove', onmousemove_canvas, false);
-    canvas.addEventListener('click', onmousemove_canvas, false);
+    canvas.addEventListener('click', event => { clicked = true; onmousemove_canvas(event); clicked=false;});
+
+    canvas.addEventListener('mouseenter', function() { clicked = false;});
+    canvas.addEventListener('mouseleave', function() { clicked = false;});
 
     let body = document.body
-    body.addEventListener('mousedown', function() {clicked = true});
-    body.addEventListener('mouseup', function() {clicked = false});
+    body.addEventListener('mousedown', function() {clicked = true;});
+    body.addEventListener('mouseup', function() {clicked = false;});
 
     let clearButton = document.getElementById('clear');
     clearButton.addEventListener('click', clear)
@@ -55,7 +45,51 @@ window.addEventListener('load', function() {
       var base64 = canvas.toDataURL("image/png");
       document.getElementById("download").href = base64;
     });
+
+    $("#uploader").click(function(){
+        var dataURL = canvas.toDataURL("image/png");
+        var button = $(this);
+        var csrf_token = getCookie("csrftoken");
+        var rslt = window.confirm("Do you really want to do?");
+        if (rslt) {
+            $.ajax({
+                type: "POST",
+                url: "http://127.0.0.1:8000/dot_pict/upload/",
+                data: {
+                    imgBase64: dataURL.replace(/^.*,/, ''),
+                },
+                contentType: "application/json",
+                // 送信前にヘッダにcsrf_tokenを付与。
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                    }
+                }
+            });
+        }
+    });
 });
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
 
 function setOpa(evt) {
     context.globalAlpha = evt.target.value;
@@ -86,6 +120,8 @@ function drawGrid() {
     let start = 0;
     let width = Number(canvas.width);
     let height = Number(canvas.height);
+    tmp = context.globalAlpha;
+    context.globalAlpha = 0.1;
 
     for (let i = start; i < width; i += x) {
         console.log(start, i, width, x);
@@ -103,6 +139,8 @@ function drawGrid() {
         context.closePath();
         context.stroke();
     }
+
+    context.globalAlpha = tmp;
 }
 
 function onmousemove_canvas(evt) {
