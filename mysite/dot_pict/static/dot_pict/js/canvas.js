@@ -7,6 +7,7 @@ var x = 20;
 var y = 20;
 
 window.addEventListener('load', function() {
+
     canvas = document.getElementById('canvas');
     canvas.width = 800;
     canvas.height = 500;
@@ -50,13 +51,15 @@ window.addEventListener('load', function() {
         var dataURL = canvas.toDataURL("image/png");
         var button = $(this);
         var csrf_token = getCookie("csrftoken");
-        var rslt = window.confirm("Do you really want to do?");
+        var rslt = window.confirm("送信しますか？");
+        console.log(document.getElementById('title').value);
         if (rslt) {
             $.ajax({
                 type: "POST",
-                url: "http://127.0.0.1:8000/dot_pict/upload/",
+                url: "../upload/",
                 data: {
                     imgBase64: dataURL.replace(/^.*,/, ''),
+                    title: document.getElementById('title').value,
                 },
                 contentType: "application/json",
                 // 送信前にヘッダにcsrf_tokenを付与。
@@ -64,7 +67,8 @@ window.addEventListener('load', function() {
                     if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
                         xhr.setRequestHeader("X-CSRFToken", csrf_token);
                     }
-                }
+                },
+                timeout: 1000
             });
         }
     });
@@ -124,7 +128,6 @@ function drawGrid() {
     context.globalAlpha = 0.1;
 
     for (let i = start; i < width; i += x) {
-        console.log(start, i, width, x);
         context.beginPath();
         context.moveTo(i,0);
         context.lineTo(i,height);
@@ -147,7 +150,6 @@ function onmousemove_canvas(evt) {
     if (!clicked)
         return;
     let mousePos = getMousePosition(canvas, evt);
-    console.log(Math.floor(mousePos.y))
     let startX = Math.floor(mousePos.x / x) * x;
     let startY = Math.floor(mousePos.y / y) * y;
     context.fillRect(startX, startY, x, y);

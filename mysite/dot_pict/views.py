@@ -1,23 +1,50 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Picture
 import base64
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import QueryDict
+from json import dumps
+from .models import Picture
+from django.views.generic import ListView, DetailView
 
+
+@login_required
 def upload(request):
     if request.method == 'POST':
-        from django.http import QueryDict
 
-        # request.bodyに入っている。
         dic = QueryDict(request.body, encoding='utf-8')
-        data = dic.get('imgBase64')
+        title = dic.get('title')
+        bin = dic.get('imgBase64')
 
-        import pdb;pdb.set_trace()
+        encoded = base64.standard_b64decode(bin)
 
-        encoded = base64.standard_b64decode(data)
+        picture = Picture()
+        picture.author = request.user
+        picture.title = title
+        picture.image.name = f"{title}.png"
+        picture.save()
 
-        with open('images/sample.png', 'wb') as f:
+        with open(picture.image.url[1:], 'wb+') as f:
             f.write(encoded)
 
-        from json import dumps
         ret = dumps({})
         return HttpResponse(ret, content_type='application/json')
+    else:
+        raise Exception()
+
+
+def create(request):
+    return render(request, 'dot_pict/canvas.html')
+
+
+class PictureList(ListView):
+    model = Picture
+    context_object_name = 'pictures'
+    paginate_by = 8
+
+    def get_queryset(self):
+        return Picture.objects.order_by('-id')
+
+
+class PictureDetail(DetailView):
+    model = Picture

@@ -1,16 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{# --templates-- #}
 
-{% if user.is_authenticated %}
-    {{ user.username }}
-{% endif %}
+{% extends "base.html" %}
+{% load static %}
 
-<a href="{% url 'accounts:logout' %}">logout</a>
+{# --templates-- #}
 
-</body>
-</html>
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+<div class="container">
+<h1>{{ user.username }}</h1>
+
+    {% for s in srcs %}
+        <img src="{{ s }}" class="img-fluid">
+    {% endfor %}
+
+</div>
+
+{% endblock content %}
+
+{% block script %}
+{% endblock script %}
