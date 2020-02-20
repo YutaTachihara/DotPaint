@@ -5,7 +5,6 @@ var clicked = null
 const gridAlpha = 0.1;
 var x = 20;
 var y = 20;
-
 window.addEventListener('load', function() {
 
     canvas = document.getElementById('canvas');
@@ -162,4 +161,3 @@ function getMousePosition(canvas, evt) {
       y: evt.clientY - rect.top
     };
 }
-
