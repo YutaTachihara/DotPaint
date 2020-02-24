@@ -15,11 +15,7 @@ def upload(request):
     if request.method == 'POST':
 
         dic = QueryDict(request.body, encoding='utf-8')
-        title = dic.get('title')
-        if title:
-            pass
-        else:
-            title = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + _randomname(10)
+        title = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + _randomname(10)
 
         bin = dic.get('imgBase64')
 

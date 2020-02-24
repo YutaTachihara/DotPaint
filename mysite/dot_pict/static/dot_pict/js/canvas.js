@@ -1,77 +1,139 @@
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 600;
+canvas.height = 500;
 
-var canvas = null
-var context = null
-var clicked = null
+let dots = [];
+const dotWidth = 10;
+const dotHeight = 10;
+let dotColor = 'black';
+let dotAlpha = 0.1;
+
+const gridWidth = dotWidth;
+const gridHeight = dotHeight;
+const gridColor = 'black';
 const gridAlpha = 0.1;
-var x = 20;
-var y = 20;
-window.addEventListener('load', function() {
 
-    canvas = document.getElementById('canvas');
-    canvas.width = 800;
-    canvas.height = 500;
-    context = canvas.getContext('2d');
-    context.lineWidth = 2;
-    context.globalAlpha = 0.1;
+const clearButton = document.getElementById('clear-button')
 
-    drawGrid();
+const colorSelector = document.getElementById('color-selector');
+const alphaSelector = document.getElementById('alpha-selector');
 
-    canvas.addEventListener('mousemove', onmousemove_canvas, false);
-    canvas.addEventListener('click', event => { clicked = true; onmousemove_canvas(event); clicked=false;});
+const downloader = document.getElementById('downloader');
+const uploader   = document.getElementById('uploader');
 
-    canvas.addEventListener('mouseenter', function() { clicked = false;});
-    canvas.addEventListener('mouseleave', function() { clicked = false;});
 
-    let body = document.body
-    body.addEventListener('mousedown', function() {clicked = true;});
-    body.addEventListener('mouseup', function() {clicked = false;});
+// 描画処理概要
+// 1 キャンバス上でマウスをクリックする。
+// 2 クリックした座標、その時の色カラーアルファが保存される。
+// 3 更新処理の時に2で保存されたドットデータを描画する。
 
-    let clearButton = document.getElementById('clear');
-    clearButton.addEventListener('click', clear)
+const onMouseDown = function(event) {
+  createDot(event.offsetX, event.offsetY)
+}
 
-    let colorButton = document.getElementById('color');
-    colorButton.addEventListener('change', setColor);
+const onMouseMove = function(event) {
+  if (event.buttons != 0)
+    createDot(event.offsetX, event.offsetY)
+}
 
-    let opa = document.getElementById('opa');
-    opa.addEventListener('change', setOpa);
+const createDot = function(clickedX, clickedY) {
+  x = Math.floor(clickedX / dotWidth);
+  y = Math.floor(clickedY / dotHeight);
+  dots.push({x: x, y: y, color:  dotColor, alpha: dotAlpha});
+}
 
-    let xVal = document.getElementById('x');
-    xVal.addEventListener('change', setX);
+canvas.addEventListener('mousedown', onMouseDown);
+canvas.addEventListener('mousemove', onMouseMove);
 
-    let yVal = document.getElementById('y');
-    yVal.addEventListener('change', setY);
+// 更新処理
+const update = function() {
+  clearCanvas();
+  drawDots();
+  drawGrid();
+}
 
-    $("#download").click(function(){
-      var base64 = canvas.toDataURL("image/png");
-      document.getElementById("download").href = base64;
-    });
+const clearCanvas = function() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+}
 
-    $("#uploader").click(function(){
-        var dataURL = canvas.toDataURL("image/png");
-        var button = $(this);
-        var csrf_token = getCookie("csrftoken");
-        var rslt = window.confirm("送信しますか？");
-        console.log(document.getElementById('title').value);
-        if (rslt) {
-            $.ajax({
-                type: "POST",
-                url: "../upload/",
-                data: {
-                    imgBase64: dataURL.replace(/^.*,/, ''),
-                    title: document.getElementById('title').value,
-                },
-                contentType: "application/json",
-                // 送信前にヘッダにcsrf_tokenを付与。
-                beforeSend: function(xhr, settings) {
-                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
-                    }
-                },
-                timeout: 1000
-            });
+const drawDots = function() {
+  for (let i = 0; i < dots.length; i++)
+    drawDot(dots[i]);
+}
+
+const drawDot = function(dotData) {
+  for (let x = dotData.x * dotWidth; x < (dotData.x + 1) * dotWidth; x++)
+    for (let y = dotData.y * dotHeight; y  < (dotData.y + 1) * dotHeight; y++)
+      paint(x, y, dotData.color, dotData.alpha);
+}
+
+const drawGrid = function() {
+  drawRowLines();
+  drawColumnLines();
+}
+
+const drawRowLines = function() {
+  for (let y = 0; y < canvas.height; y += gridHeight)
+    drawLine(0, y, canvas.width, y);
+}
+
+const drawColumnLines = function() {
+  for (let x = 0; x < canvas.width; x += gridWidth)
+    drawLine(x, 0, x, canvas.height);
+}
+
+const drawLine = function(startX, startY, endX, endY) {
+  for (let x = startX; x <= endX; x++)
+    for (let y = startY; y <= endY; y++)
+      paint(x, y, gridColor, gridAlpha);
+}
+
+const paint = function(x, y, color, alpha) {
+  context.fillStyle = color;
+  context.globalAlpha = alpha;
+  context.fillRect(x, y, 1, 1);
+}
+
+setInterval(update, 100) // 100ms ≒ 1/10s
+
+// ダウンロード処理
+
+const download = function() {
+  // グリッドは保存の際にいらないので消す。
+  clearCanvas();
+  drawDots();
+  const base64 = canvas.toDataURL("image/png");
+  downloader.href = base64;
+}
+
+downloader.addEventListener('click', download);
+
+
+// アップロード処理
+
+const upload = function() {
+  // グリッドは保存の際にいらないので消す。
+  clearCanvas();
+  drawDots();
+  const base64 = canvas.toDataURL("image/png");
+  const csrf_token = getCookie("csrftoken");
+  $.ajax({
+    type: "POST",
+    url: "../upload/",
+    data: {
+        imgBase64: base64.replace(/^.*,/, ''),
+    },
+    contentType: "application/json",
+    // 送信前にヘッダにcsrf_tokenを付与。
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrf_token);
         }
-    });
+    },
+    timeout: 1000
 });
+}
 
 function getCookie(name) {
     var cookieValue = null;
@@ -90,74 +152,13 @@ function getCookie(name) {
 }
 
 function csrfSafeMethod(method) {
-    // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
-function setOpa(evt) {
-    context.globalAlpha = evt.target.value;
-}
+uploader.addEventListener('click', upload);
 
-function setY(event) {
-    y = 0 + event.target.value;
-    y = Number(y);
-    clear();
-}
+// その他
 
-function setX(event) {
-    x = 0 + event.target.value;
-    x = Number(x);
-    clear();
-}
-
-function setColor(evt) {
-    context.fillStyle = evt.target.value;
-}
-
-function clear() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();
-}
-
-function drawGrid() {
-    let start = 0;
-    let width = Number(canvas.width);
-    let height = Number(canvas.height);
-    tmp = context.globalAlpha;
-    context.globalAlpha = 0.1;
-
-    for (let i = start; i < width; i += x) {
-        context.beginPath();
-        context.moveTo(i,0);
-        context.lineTo(i,height);
-        context.closePath();
-        context.stroke();
-    }
-
-    for (let i = start; i < height; i += y) {
-        context.beginPath();
-        context.moveTo(0, i);
-        context.lineTo(width, i);
-        context.closePath();
-        context.stroke();
-    }
-
-    context.globalAlpha = tmp;
-}
-
-function onmousemove_canvas(evt) {
-    if (!clicked)
-        return;
-    let mousePos = getMousePosition(canvas, evt);
-    let startX = Math.floor(mousePos.x / x) * x;
-    let startY = Math.floor(mousePos.y / y) * y;
-    context.fillRect(startX, startY, x, y);
-}
-
-function getMousePosition(canvas, evt) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top
-    };
-}
+clearButton.addEventListener('click', (e) => {dots = []});
+colorSelector.addEventListener('change', (e) => {dotColor = e.target.value});
+alphaSelector.addEventListener('change', (e) => {dotAlpha = e.target.value});

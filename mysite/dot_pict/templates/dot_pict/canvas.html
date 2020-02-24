@@ -18,34 +18,15 @@
     </canvas>
 </div>
 
-<button type="button" class="btn btn-info" id="clear">クリア</button>
+<button type="button" class="btn btn-info" id="clear-button">全部消す</button>
+<input id="color-selector" type="color">
+<input id="alpha-selector" type="number" min="0" max="1">
 
-<input type="color" name="head"value="#e66465" id="color">
-
-<input type="range" value="0.1" min="0" max="1" step="0.1" id="opa"
-  oninput="document.getElementById('opaVal').value=this.value">
-<output id="opaVal">0.1</output>
-
-<input type="range" value="20" min="3" max="100" step="1" id="x" oninput="document.getElementById('xVal').value=this.value">
-<output id="xVal">20</output>
-
-<input type="range" value="20" min="3" max="100" step="1" id="y" oninput="document.getElementById('yVal').value=this.value">
-<output id="yVal">20</output>
-
-<input type="range" value="300" min="100" max="100" step="10" id="canvas-width-slider" oninput="document.getElementById('canvas-width').value=this.value">
-<output id="canvas-width">300</output>
-
-<input type="range" value="400" min="100" max="100" step="10" id="canvas-height-slider" oninput="document.getElementById('canvas-height').value=this.value">
-<output id="canvas-height">400</output>
-
-<a id="download" href="#" download="canvas.png">ダウンロード</a>
+<a id="downloader" href="#" download="canvas.png">ダウンロード</a>
 
 {% if user.is_authenticated %}
-    <form>
-        <input class="form-control" type="text" id="title" value="">
-    </form>
     <p>
-      <button class="btn btn-info" type="button" id="uploader">入力値と固定値を送信する</button>
+      <button class="btn btn-info" type="button" id="uploader">送信</button>
     </p>
 {% endif %}
 
@@ -53,5 +34,4 @@
 
 {% block script %}
 <script type="text/javascript" src="{% static 'dot_pict/js/canvas.js' %}"></script>
-<!--<script type="text/javascript" src="{% static 'dot_pict/js/dotArt.js' %}"></script>-->
 {% endblock script %}
