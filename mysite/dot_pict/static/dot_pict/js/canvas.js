@@ -9,6 +9,8 @@ const dotHeight = 10;
 let dotColor = 'black';
 let dotAlpha = 0.1;
 
+let appendsNewDot = true;
+
 const gridWidth = dotWidth;
 const gridHeight = dotHeight;
 const gridColor = 'black';
@@ -41,6 +43,7 @@ const createDot = function(clickedX, clickedY) {
   x = Math.floor(clickedX / dotWidth);
   y = Math.floor(clickedY / dotHeight);
   dots.push({x: x, y: y, color:  dotColor, alpha: dotAlpha});
+  appendsNewDot = true;
 }
 
 canvas.addEventListener('mousedown', onMouseDown);
@@ -48,6 +51,12 @@ canvas.addEventListener('mousemove', onMouseMove);
 
 // 更新処理
 const update = function() {
+  if (!appendsNewDot) return;
+  render();
+  appendsNewDot = false;
+}
+
+const render = function() {
   clearCanvas();
   drawDots();
   drawGrid();
@@ -105,6 +114,8 @@ const download = function() {
   drawDots();
   const base64 = canvas.toDataURL("image/png");
   downloader.href = base64;
+  // グリッドの再描画
+  drawGrid();
 }
 
 downloader.addEventListener('click', download);
@@ -132,7 +143,9 @@ const upload = function() {
         }
     },
     timeout: 1000
-});
+  });
+  // グリッドの再描画
+  drawGrid();
 }
 
 function getCookie(name) {
